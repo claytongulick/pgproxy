@@ -1,6 +1,6 @@
 {
   "name": "pgproxy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Execute nodejs functions on a postgres server, as if they were local, using plv8",
   "main": "lib/index.js",
   "scripts": {
