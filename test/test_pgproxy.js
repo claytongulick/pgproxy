@@ -42,6 +42,7 @@ describe('PGProxy Tests', () => {
         found = null;
         found = procs.find((proc) => proc.proname == 'pgproxy_system_name');
         assert.notEqual(found, null);
+        PGProxy.destroy();
 
     });
 
@@ -65,6 +66,7 @@ describe('PGProxy Tests', () => {
 
         let name = await proxy.system_name("This is A TEST");
         assert.equal(name, 'this_is_a_test');
+        PGProxy.destroy();
     });
 
     it('should update existing functions with changes', async () => {
@@ -94,6 +96,7 @@ describe('PGProxy Tests', () => {
         let row = await proxy.select_test('asdf','1234');
         assert.equal(row.param1, 'asdf');
         assert.equal(row.param2, '1234');
+        PGProxy.destroy();
 
         functions = {
             select_test: (param1, param2) => {
@@ -111,6 +114,7 @@ describe('PGProxy Tests', () => {
         row = await proxy.select_test('asdf','1234');
         assert.equal(row.param1, 'pass!');
         assert.equal(row.param2, '1234');
+        PGProxy.destroy();
 
 
     });
@@ -138,6 +142,7 @@ describe('PGProxy Tests', () => {
         found = null;
         found = procs.find((proc) => proc.proname == 'pgproxy_system_name');
         assert.notEqual(found, null);
+        PGProxy.destroy();
 
         functions = {
             select_test: (param1, param2) => {
@@ -168,8 +173,44 @@ describe('PGProxy Tests', () => {
 
         let name = await proxy.system_name("This is A TEST");
         assert.equal(name, 'this_is_a_test');
+        PGProxy.destroy();
 
     });
+
+    it('should execute reverse proxy functions', async () => {
+        let functions = {
+            reverse_test: (param1, param2) => {
+                let result = plv8.execute(`select '${param1}' as param1, '${param2}' as param2`);
+                nodeFunction(result);
+                return result[0];
+            }
+        };
+        let resolve;
+        let promise = new Promise(
+            (_resolve, reject) => {
+                resolve = _resolve;
+            }
+        );
+        let proxy = await PGProxy.create(functions, {
+            client: client, 
+            schema: 'test',
+            expose: {
+                nodeFunction: (result) => {
+                    let row = result[0];
+                    assert.equal(row.param1, 'asdf');
+                    assert.equal(row.param2, '1234');
+                    resolve();
+                }
+            }});
+        let row = await proxy.reverse_test('asdf','1234');
+        assert.equal(row.param1, 'asdf');
+        assert.equal(row.param2, '1234');
+
+        PGProxy.destroy();
+        return promise;
+    });
+
+
 
     it('should purge unwanted functions', async () => {
         let functions = {
@@ -194,6 +235,7 @@ describe('PGProxy Tests', () => {
         found = null;
         found = procs.find((proc) => proc.proname == 'pgproxy_system_name');
         assert.notEqual(found, null);
+        PGProxy.destroy();
 
         functions = {
             system_name: (name) => {
@@ -217,8 +259,8 @@ describe('PGProxy Tests', () => {
         catch(err) {
             assert.ok(true); 
         }
+        PGProxy.destroy();
     });
-
 
     after(async () => {
         await client.end();
