@@ -1,0 +1,29 @@
+{
+  "name": "pgproxy",
+  "version": "0.1.0",
+  "description": "Execute nodejs functions on a postgres server, as if they were local, using plv8",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "keywords": [
+    "postgres",
+    "proxy",
+    "plv8",
+    "node",
+    "stored",
+    "procedure",
+    "function",
+    "pg",
+    "postgresql"
+  ],
+  "author": "Clayton C Gulick",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^7.12.1"
+  },
+  "devDependencies": {
+    "assert": "^2.0.0",
+    "mocha": "^6.2.0"
+  }
+}
