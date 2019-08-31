@@ -266,3 +266,33 @@ describe('PGProxy Tests', () => {
         await client.end();
     })
 });
+
+/*
+create or replace function test.pgproxy_reverse_test(params json)
+returns json
+language 'plv8'
+as
+$BODY$
+
+function generateToken() {...}
+function reverseProxy(name, args) {
+	let payload = {fn:name, params: args, action: 'call'};
+	plv8.execute(`NOTIFY pgproxy, '${JSON.stringify(payload)}'`);
+}
+
+function nodeFunction() { return reverseProxy.apply({},['nodeFunction',arguments]); }
+
+let token = generateToken();
+if(params.step == 0) {
+	plv8.execute(`insert into pgproxy_state fn_name, step, token values 'pgproxy_reverse_test', 1, ${generateToken()},`)
+}
+	
+let reverse_test = (param1, param2) => {
+		if(params.step)
+		let result = plv8.execute(`select '${param1}' as param1, '${param2}' as param2`);
+		nodeFunction(result);
+		return result[0];
+	};
+let return_value = reverse_test.apply(plv8, params);
+return JSON.stringify(return_value);
+$BODY$*/
