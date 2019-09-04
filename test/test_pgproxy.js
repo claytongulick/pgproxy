@@ -3,7 +3,7 @@ let assert = require('assert');
 
 //replace cn information with your dev db
 let client = new Client({
-    host: '172.17.174.71',
+    host: '172.17.174.70',
     user: 'postgres',
     password: 'asdf1234',
     database: 'test'
@@ -175,6 +175,27 @@ describe('PGProxy Tests', () => {
         assert.equal(name, 'this_is_a_test');
         PGProxy.destroy();
 
+    });
+
+    it('should call a function from another function', async () => {
+        let functions = {
+            select_test: (param1) => {
+                plv8.elog(NOTICE, 'param1: ' + param1.toString());
+                let name = system_name(param1);
+                return name;
+            },
+            system_name: (name) => {
+                plv8.elog(NOTICE, 'name: ' + name.toString());
+                return name
+                    .toLowerCase()
+                    .replace(/[^a-zA-Z ]/g, '')
+                    .replace(/ /g, '_');
+            }
+        };
+        let proxy = await PGProxy.create(functions, {client: client, schema: 'test'});
+        let name = await proxy.select_test("This Is A Name");
+        assert.equal(name, 'this_is_a_name');
+        PGProxy.destroy();
     });
 
     it('should execute reverse proxy functions', async () => {
