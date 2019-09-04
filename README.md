@@ -78,6 +78,8 @@ Each function needs to be standalone - i.e. closures etc... won't work, since we
 
 Any values returned from the server are serialized to json, and parsed back into values on the node side.
 
+As an additional convenience, PGProxy creates function stubs on the plv8 side for all of the collected functions, this allows easy calling from one plv8 function to another, without needing to use plv8 find_function. Note, just like with plv8 find_function, params are serialized to and from json, so there's a bit of a performance penalty there.
+
 You can expose functions on the node side to the plv8 function as well, however you can't return a value back. This is because the mechanism to execute the node function is simple message passing using pg's NOTIFY capability. Unfortunately, there's no way to respond to a NOTIFY message currently, so the reverse proxy is a "fire and forget" type thing, there's no error handling or response passing. Still, it could be useful in certain situations like logging.
 
 ## Development status
